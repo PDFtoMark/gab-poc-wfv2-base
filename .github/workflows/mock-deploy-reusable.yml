@@ -1,0 +1,39 @@
+name: Mock Deploy App to Environment
+on:
+  workflow_call:
+    inputs:
+      gitlab-project-id:
+        type: string
+        required: true
+      gitlab-project-ref:
+        type: string
+        default: "master"
+      environment-name:
+        type: string
+        default: "development"
+    secrets:
+      DEPLOY_HOST:
+        required: true
+      DEPLOY_TRIGGER_TOKEN:
+        required: true
+      DEPLOY_ACCESS_TOKEN:
+        required: true
+jobs:
+  trigger-pipeline:
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.environment-name }}
+    steps:
+      - name: Deploy environment (mock - no real GitLab call)
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_TRIGGER_TOKEN: ${{ secrets.DEPLOY_TRIGGER_TOKEN }}
+          DEPLOY_ACCESS_TOKEN: ${{ secrets.DEPLOY_ACCESS_TOKEN }}
+        run: |
+          echo "MOCK: would POST ***/api/v4/projects/${{ inputs.gitlab-project-id }}/trigger/pipeline ref=${{ inputs.gitlab-project-ref }}"
+          echo "TRIGGER_TOKEN_PRESENT: $([ -n "$DEPLOY_TRIGGER_TOKEN" ] && echo YES || echo NO)"
+          echo "ACCESS_TOKEN_PRESENT: $([ -n "$DEPLOY_ACCESS_TOKEN" ] && echo YES || echo NO)"
+          echo "HOST_PRESENT: $([ -n "$DEPLOY_HOST" ] && echo YES || echo NO)"
+          echo "upstream_event=${{ github.event.workflow_run.event }}"
+          echo "upstream_head_branch=${{ github.event.workflow_run.head_branch }}"
+          echo "upstream_head_repo=${{ github.event.workflow_run.head_repository.full_name }}"
